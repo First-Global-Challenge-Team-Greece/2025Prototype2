@@ -13,7 +13,7 @@ import java.util.function.DoubleSupplier;
 public class Drivetrain {
     private DcMotorEx leftMotor, rightMotor;
     private DoubleSupplier forwardPower, turnPower, accelPower;
-    public static double leftKS = 0.0, leftKV = 1.0, rightKS = 0.0, rightKV = 1.0;
+    public static double leftKS = 0.19, leftKV = 1.0, rightKS = 0.12, rightKV = 1.1;
 
     private Telemetry telemetry;
 

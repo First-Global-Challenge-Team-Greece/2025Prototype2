@@ -7,17 +7,12 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.Subsystems.Accelerator;
-import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain;
-import org.firstinspires.ftc.teamcode.Subsystems.Intake;
-import org.firstinspires.ftc.teamcode.TeleOP;
 
 @Config
-@TeleOp(name="12", group="")
+@TeleOp(name="FeedForwardTuner", group="Tests")
 public class FeedForwardTuner extends LinearOpMode {
     private DcMotorEx leftMotor, rightMotor;
-    public static double KS = 0.0, KV = 1.0;
-
+    public static double KSL = 0.19, KSR=0.12, KVL = 1.0, KVR = 1.1, power=0;
     private Telemetry dash_tele;
 
     @Override
@@ -29,12 +24,14 @@ public class FeedForwardTuner extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-            leftMotor.setPower(KS * Math.signum(gamepad1.left_stick_y) + KV * gamepad1.left_stick_y);
-            rightMotor.setPower(KS * Math.signum(gamepad1.left_stick_y) + KV * gamepad1.left_stick_y);
+//            power = gamepad1.left_stick_y;
+            leftMotor.setPower(KSL * Math.signum(power) + KVL * power);
+            rightMotor.setPower(KSR * Math.signum(power) + KVR * power);
 
-            dash_tele.addData("Target Vel: ", gamepad1.left_stick_y*(28*6000));
+            dash_tele.addData("Target Vel: ", power*(28*500));
             dash_tele.addData("Left Actual Vel: ", leftMotor.getVelocity());
             dash_tele.addData("Right Actual Vel: ", rightMotor.getVelocity());
+            dash_tele.update();
         }
     }
 }
