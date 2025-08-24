@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.Constants;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -19,8 +20,6 @@ public class Drivetrain {
     // Feedforward constants
     // KS: is the static gain -> for Static Friction
     // KV: is the velocity gain -> Fixes Motor Inaccuracies Linearly
-    public static double[] KS = {0.0, 0.0};
-    public static double[] KV = {1.0, 1.0};
 
     private BooleanSupplier reversedHeading; // True Sets the heading to rear
 
@@ -36,8 +35,8 @@ public class Drivetrain {
             DoubleSupplier accelPower,
             BooleanSupplier reversedHeading
     ) {
-        leftMotor = hm.get(DcMotorEx.class, "lm");
-        rightMotor = hm.get(DcMotorEx.class, "rm");
+        leftMotor = hm.get(DcMotorEx.class, Constants.LEFT_MOTOR_NAME);
+        rightMotor = hm.get(DcMotorEx.class, Constants.RIGHT_MOTOR_NAME);
         rightMotor.setDirection(DcMotorEx.Direction.REVERSE);
         leftMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         rightMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
@@ -51,9 +50,9 @@ public class Drivetrain {
         this.telemetry = telemetry;
     }
 
-    public double feedforward(double input, int motor) {
+    public double feedforward(double input, Constants.Motor motor) {
         // Formula: output = Math.signum(input) * Ks + input * kV
-        return KS[motor] * Math.signum(input) + KV[motor] * input;
+        return motor.getKS() * Math.signum(input) + motor.getKV() * input;
     }
 
     public void update() {
@@ -62,8 +61,8 @@ public class Drivetrain {
                 accelPower.getAsDouble(),
                 0,
                 1,
-                0.55,
-                1
+                Constants.DEFAULT_POWER,
+                Constants.MAX_POWER
         ); // Map the Max Power Based on Trigger
 
         // Per Side/Motor Power Calculation
@@ -73,21 +72,21 @@ public class Drivetrain {
                 1.0,
                 0.0,
                 max_mapping_power
-        ) + 0.1 * Math.signum(turnPower.getAsDouble()); // KS_theta robot turn -> Smoothness
+        ) + Constants.KS_theta * Math.signum(turnPower.getAsDouble()); // KS_theta robot turn -> Smoothness // TODO Na to alla 0.1 kai 0.2
         double rightPower = Range.scale(
                 forwardPower.getAsDouble() * fwd_factor - turnPower.getAsDouble(),
                 0.0,
                 1.0,
                 0.0,
                 max_mapping_power
-        ) - 0.1 * Math.signum(turnPower.getAsDouble()); // KS_theta robot turn -> Smoothness
+        ) - Constants.KS_theta * Math.signum(turnPower.getAsDouble()); // KS_theta robot turn -> Smoothness
 
         // Set the Power to Motors (power calculated above -> Feedforward(L, R) -> Power Setting)
-        leftMotor.setPower(feedforward(leftPower, 0));
-        rightMotor.setPower(feedforward(rightPower, 1));
+        leftMotor.setPower(feedforward(leftPower, Constants.Motor.LEFT));
+        rightMotor.setPower(feedforward(rightPower, Constants.Motor.RIGHT));
 
         // --------------------------------------- Telemetry -------------------------------------- //
-        telemetry.addData("Forward Power: ", forwardPower.getAsDouble());
-        telemetry.addData("Turn Power: ", turnPower.getAsDouble());
+        telemetry.addData("[Drivetrain] Forward Power: ", forwardPower.getAsDouble());
+        telemetry.addData("[Drivetrain] Turn Power: ", turnPower.getAsDouble());
     }
 }

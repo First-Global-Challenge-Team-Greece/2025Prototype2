@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.Subsystems;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
@@ -91,7 +90,7 @@ public class Barrier {
         }
 
         // -------------------------------------- Telemetry ------------------------------------- //
-        telemetry.addData("Barrier Arms State: ", getState());
+        telemetry.addData("[Barrier] State: ", getState());
     }
 
     public void setState(State state) {

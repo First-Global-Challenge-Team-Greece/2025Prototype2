@@ -6,8 +6,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.Constants;
 
-import java.util.HashMap;
 import java.util.function.BooleanSupplier;
 
 @Config
@@ -17,20 +17,7 @@ public class Intake {
     private BooleanSupplier forwardButton, reverseButton;
 
     // ------------------------------------ State Management ------------------------------------ //
-
-    public enum State {
-        STOPPED,
-        FORWARD,
-        REVERSE
-    }
-
-    private State state = State.STOPPED;
-
-    private HashMap<State, Double> velocities = new HashMap<Intake.State, Double>() {{
-        put(State.FORWARD, 1.0);
-        put(State.REVERSE, -1.0);
-        put(State.STOPPED, 0.0);
-    }};
+    private Constants.IntakeState state = Constants.IntakeState.STOPPED;
 
     private Telemetry telemetry;
 
@@ -40,7 +27,7 @@ public class Intake {
                   Telemetry telemetry,
                   BooleanSupplier forwardButton,
                   BooleanSupplier reverseButton) {
-        intakeMotor = hm.get(DcMotorEx.class, "intake");
+        intakeMotor = hm.get(DcMotorEx.class, Constants.INTAKE_MOTOR_NAME);
         intakeMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -53,27 +40,30 @@ public class Intake {
     public void update() {
         // Move Intake according to button presses
         if(forwardButton.getAsBoolean()) {
-            state = state != State.FORWARD ? State.FORWARD : State.STOPPED;
+            state = state != Constants.IntakeState.FORWARD ?
+                    Constants.IntakeState.FORWARD :
+                    Constants.IntakeState.STOPPED;
         }
 
         if(reverseButton.getAsBoolean()) {
-            state = state != State.REVERSE ? State.REVERSE : State.STOPPED;
+            state = state != Constants.IntakeState.REVERSE ?
+                    Constants.IntakeState.REVERSE :
+                    Constants.IntakeState.STOPPED;
         }
 
         // Set motor power based on state
-        intakeMotor.setPower(velocities.get(state));
+        intakeMotor.setPower(state.getVelocity());
 
         // -------------------------------------- Telemetry ------------------------------------- //
-        telemetry.addData("Intake State: ", getState());
+        telemetry.addData("[Intake] State: ", getState());
     }
 
-    public void setState(State state) {
+    public void setState(Constants.IntakeState state) {
         if(this.state == state) return; // No Change, (Less Variable Writing Optimization)
         this.state = state;
-//        intakeMotor.setPower(velocities.get(state));
     }
 
-    public State getState() {
+    public Constants.IntakeState getState() {
         return state;
     }
 }

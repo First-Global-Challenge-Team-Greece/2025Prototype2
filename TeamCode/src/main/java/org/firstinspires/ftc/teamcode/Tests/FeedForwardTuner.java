@@ -17,7 +17,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 @TeleOp(name="FeedForwardTuner", group="Tests")
 public class FeedForwardTuner extends LinearOpMode {
     private DcMotorEx leftMotor, rightMotor;
-    public static double KSL = 0.19, KSR=0.12, KVL = 1.0, KVR = 1.1, power=0;
+    public static double KSL = 0.07, KSR=0.05, KVL = 1.07, KVR = 1.0, power=0;
     private Telemetry dash_tele;
 
     @Override
@@ -32,8 +32,8 @@ public class FeedForwardTuner extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-            leftMotor.setPower(KSL * Math.signum(power) + KVL * power);
-            rightMotor.setPower(KSR * Math.signum(power) + KVR * power);
+            leftMotor.setPower(KSL * Math.signum(power+0.000000001) + KVL * power);
+            rightMotor.setPower(KSR * Math.signum(power+0.000000001) + KVR * power);
 
             dash_tele.addData("Target Vel: ", power*(28*500));
             dash_tele.addData("Left Actual Vel: ", leftMotor.getVelocity());

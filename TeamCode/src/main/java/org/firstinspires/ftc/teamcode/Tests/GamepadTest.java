@@ -1,14 +1,19 @@
 package org.firstinspires.ftc.teamcode.Tests;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
 import org.firstinspires.ftc.teamcode.utils.GamepadEx;
 
 // This TEST FILE: tests rising edge detection class for gamepad. For latency and logic bugs!
 
+@Disabled // TEST FILE: It is Disabled the OpMode so it doesnt show up in the driver station
 @TeleOp(name="GamepadTest", group="Tests")
 public class GamepadTest extends LinearOpMode {
     public GamepadEx controller;
+
+    private boolean cur_states[] = new boolean[GamepadEx.Button.values().length];
 
     @Override
     public void runOpMode() {
@@ -61,10 +66,9 @@ public class GamepadTest extends LinearOpMode {
             telemetry.addData("Just Pressed Right Stick: ", controller.justPressed(GamepadEx.Button.RIGHT_STICK_BUTTON));
             telemetry.addData("Just Pressed Left Bumper: ", controller.justPressed(GamepadEx.Button.LEFT_BUMPER));
             telemetry.addData("Just Pressed Right Bumper: ", controller.justPressed(GamepadEx.Button.RIGHT_BUMPER));
-            controller.update(gamepad1);
+            controller.update();
 
             telemetry.update();
-            sleep(100);
         }
     }
 }

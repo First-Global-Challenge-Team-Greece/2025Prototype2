@@ -50,6 +50,7 @@ public class TeleOP extends LinearOpMode {
         );
         ascent = new Ascent(
                 hardwareMap,
+                telemetry,
                 () -> controller.justPressed(GamepadEx.Button.RIGHT_BUMPER),
                 () -> controller.justPressed(GamepadEx.Button.LEFT_BUMPER)
         );
@@ -66,7 +67,7 @@ public class TeleOP extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive() && !isStopRequested()) {
-            controller.update(gamepad1);
+            controller.update();
             // Wait for the robot to Move a little to init the subsystems -> avoid penalties b4
             // match timer starts
 
@@ -84,6 +85,10 @@ public class TeleOP extends LinearOpMode {
             accelerator.update();
             ascent.update();
 //            barrier.update();
+
+            telemetry.addData("A: ", controller.isDown(GamepadEx.Button.A));
+            telemetry.addData("DPAD_UP: ", controller.isDown(GamepadEx.Button.DPAD_UP));
+            telemetry.addData("DPAD_DOWN: ", controller.isDown(GamepadEx.Button.DPAD_DOWN));
 
             telemetry.update();
         }

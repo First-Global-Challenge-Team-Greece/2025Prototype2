@@ -2,101 +2,68 @@ package org.firstinspires.ftc.teamcode.utils;
 
 import com.qualcomm.robotcore.hardware.Gamepad;
 
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.function.BooleanSupplier;
+
 // UTIL FILE: This file extends the Gamepad class to provide additional functionality for button
 // presses and joystick inputs. (Rising Edge Detection, Falling Edge Detection, Correct Numerical,
 // signs on joysticks)
 
 public class GamepadEx {
-    private Gamepad controller, prevController;
+    private Gamepad controller;
 
     public enum Button { // Enum for button mapping
         A, B, X, Y, DPAD_UP, DPAD_DOWN, DPAD_LEFT, DPAD_RIGHT,
         LEFT_BUMPER, RIGHT_BUMPER, LEFT_STICK_BUTTON, RIGHT_STICK_BUTTON
     }
 
-    public GamepadEx(Gamepad gamepad) {
-        this.controller = gamepad;
-        this.prevController = new Gamepad();
+    private final Map<Button, BooleanSupplier> buttonMap = new EnumMap<>(Button.class);
+
+    private boolean cur_states[] = new boolean[GamepadEx.Button.values().length];
+    private boolean prev_states[] = new boolean[GamepadEx.Button.values().length];
+
+    public GamepadEx(Gamepad gamepad1) {
+        this.controller = gamepad1;
+
+        buttonMap.put(Button.A, () -> controller.a);
+        buttonMap.put(Button.B, () -> controller.b);
+        buttonMap.put(Button.X, () -> controller.x);
+        buttonMap.put(Button.Y, () -> controller.y);
+        buttonMap.put(Button.DPAD_UP, () -> controller.dpad_up);
+        buttonMap.put(Button.DPAD_DOWN, () -> controller.dpad_down);
+        buttonMap.put(Button.DPAD_LEFT, () -> controller.dpad_left);
+        buttonMap.put(Button.DPAD_RIGHT, () -> controller.dpad_right);
+        buttonMap.put(Button.LEFT_BUMPER, () -> controller.left_bumper);
+        buttonMap.put(Button.RIGHT_BUMPER, () -> controller.right_bumper);
+        buttonMap.put(Button.LEFT_STICK_BUTTON, () -> controller.left_stick_button);
+        buttonMap.put(Button.RIGHT_STICK_BUTTON, () -> controller.right_stick_button);
     }
 
-    public void update(Gamepad gamepad) {
-        prevController.copy(controller);
-        controller.copy(gamepad);
+    public void update() {
+        prev_states = cur_states.clone();
+        for (Button button : Button.values()) {
+            cur_states[button.ordinal()] = buttonMap.get(button).getAsBoolean();
+        }
     }
 
     // ---------------------------------- Rising Edge Detection --------------------------------- //
     public boolean justPressed(Button button) {
-        switch (button) {
-            case A: return controller.a && !prevController.a;
-            case B: return controller.b && !prevController.b;
-            case X: return controller.x && !prevController.x;
-            case Y: return controller.y && !prevController.y;
-            case DPAD_UP: return controller.dpad_up && !prevController.dpad_up;
-            case DPAD_DOWN: return controller.dpad_down && !prevController.dpad_down;
-            case DPAD_LEFT: return controller.dpad_left && !prevController.dpad_left;
-            case DPAD_RIGHT: return controller.dpad_right && !prevController.dpad_right;
-            case LEFT_BUMPER: return controller.left_bumper && !prevController.left_bumper;
-            case RIGHT_BUMPER: return controller.right_bumper && !prevController.right_bumper;
-            case LEFT_STICK_BUTTON: return controller.left_stick_button && !prevController.left_stick_button;
-            case RIGHT_STICK_BUTTON: return controller.right_stick_button && !prevController.right_stick_button;
-        }
-        return false;
+        return cur_states[button.ordinal()] && !prev_states[button.ordinal()];
     }
 
     // --------------------------------- Falling Edge Detection --------------------------------- //
     public boolean justReleased(Button button) {
-        switch (button) {
-            case A: return !controller.a && prevController.a;
-            case B: return !controller.b && prevController.b;
-            case X: return !controller.x && prevController.x;
-            case Y: return !controller.y && prevController.y;
-            case DPAD_UP: return !controller.dpad_up && prevController.dpad_up;
-            case DPAD_DOWN: return !controller.dpad_down && prevController.dpad_down;
-            case DPAD_LEFT: return !controller.dpad_left && prevController.dpad_left;
-            case DPAD_RIGHT: return !controller.dpad_right && prevController.dpad_right;
-            case LEFT_BUMPER: return !controller.left_bumper && prevController.left_bumper;
-            case RIGHT_BUMPER: return !controller.right_bumper && prevController.right_bumper;
-            case LEFT_STICK_BUTTON: return !controller.left_stick_button && prevController.left_stick_button;
-            case RIGHT_STICK_BUTTON: return !controller.right_stick_button && prevController.right_stick_button;
-        }
-        return false;
+        return !cur_states[button.ordinal()] && prev_states[button.ordinal()];
     }
 
     // ------------------------------------- Button States -------------------------------------- //
     public boolean isDown(Button button) {
-        switch (button) {
-            case A: return controller.a;
-            case B: return controller.b;
-            case X: return controller.x;
-            case Y: return controller.y;
-            case DPAD_UP: return controller.dpad_up;
-            case DPAD_DOWN: return controller.dpad_down;
-            case DPAD_LEFT: return controller.dpad_left;
-            case DPAD_RIGHT: return controller.dpad_right;
-            case LEFT_BUMPER: return controller.left_bumper;
-            case RIGHT_BUMPER: return controller.right_bumper;
-            case LEFT_STICK_BUTTON: return controller.left_stick_button;
-            case RIGHT_STICK_BUTTON: return controller.right_stick_button;
-        }
-        return false;
+        return cur_states[button.ordinal()];
     }
 
     public boolean isUp(Button button) {
-        switch (button) {
-            case A: return !controller.a;
-            case B: return !controller.b;
-            case X: return !controller.x;
-            case Y: return !controller.y;
-            case DPAD_UP: return !controller.dpad_up;
-            case DPAD_DOWN: return !controller.dpad_down;
-            case DPAD_LEFT: return !controller.dpad_left;
-            case DPAD_RIGHT: return !controller.dpad_right;
-            case LEFT_BUMPER: return !controller.left_bumper;
-            case RIGHT_BUMPER: return !controller.right_bumper;
-            case LEFT_STICK_BUTTON: return !controller.left_stick_button;
-            case RIGHT_STICK_BUTTON: return !controller.right_stick_button;
-        }
-        return false;
+        return !cur_states[button.ordinal()];
     }
 
     // ----------------------------------------- Linear ----------------------------------------- //
