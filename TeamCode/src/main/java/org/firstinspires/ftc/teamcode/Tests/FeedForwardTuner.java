@@ -17,8 +17,11 @@ public class FeedForwardTuner extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        leftMotor = hardwareMap.get(DcMotorEx.class, "left_motor");
-        rightMotor = hardwareMap.get(DcMotorEx.class, "right_motor");
+        leftMotor = hardwareMap.get(DcMotorEx.class, "lm");
+        rightMotor = hardwareMap.get(DcMotorEx.class, "rm");
+        rightMotor.setDirection(DcMotorEx.Direction.REVERSE);
+        leftMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        rightMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
         dash_tele = FtcDashboard.getInstance().getTelemetry();
 
         waitForStart();

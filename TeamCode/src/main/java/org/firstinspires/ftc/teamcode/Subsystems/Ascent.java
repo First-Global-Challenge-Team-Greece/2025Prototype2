@@ -11,16 +11,21 @@ import java.util.function.BooleanSupplier;
 public class Ascent {
     private DcMotorEx ascentMotor;
     public static double ASCENT_MAX_POWER = 1.0;
-    private BooleanSupplier button;
+    private BooleanSupplier raiseBtn, lowerBtn;
 
     public Ascent(HardwareMap hm,
-                  BooleanSupplier button) {
+                  BooleanSupplier raiseBtn,
+                  BooleanSupplier lowerBtn) {
         ascentMotor = hm.get(DcMotorEx.class, "ascent");
         ascentMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        this.button = button;
+        this.raiseBtn = raiseBtn;
+        this.lowerBtn = lowerBtn;
     }
 
     public void update() {
-        ascentMotor.setPower(button.getAsBoolean() ? ASCENT_MAX_POWER : 0);
+        if(!raiseBtn.getAsBoolean() && !lowerBtn.getAsBoolean()) return;
+
+        ascentMotor.setPower(raiseBtn.getAsBoolean() ? ASCENT_MAX_POWER : 0);
+        ascentMotor.setPower(lowerBtn.getAsBoolean() ? -ASCENT_MAX_POWER : 0);
     }
 }

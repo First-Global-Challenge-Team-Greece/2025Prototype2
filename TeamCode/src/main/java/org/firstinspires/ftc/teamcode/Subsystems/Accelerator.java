@@ -12,8 +12,8 @@ import java.util.function.BooleanSupplier;
 public class Accelerator {
     private DcMotorEx accelMotor;
     public static double ACCEL_MAX_POWER = 1.0;
-    private BooleanSupplier activationButton, forwardButton, reverseButton;
-    private boolean prev_btn_state, accelEnabled = false;
+    private BooleanSupplier activationButton;
+    private boolean prev_btn_state;
 
     public enum State {
         STOPPED,
@@ -26,34 +26,25 @@ public class Accelerator {
 
     public Accelerator(HardwareMap hm,
                        Telemetry telemetry,
-                       BooleanSupplier activationButton,
-                       BooleanSupplier forwardButton,
-                       BooleanSupplier reverseButton) {
+                       BooleanSupplier activationButton) {
         accelMotor = hm.get(DcMotorEx.class, "accel");
         accelMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
 
         this.activationButton = activationButton;
-        this.forwardButton = forwardButton;
-        this.reverseButton = reverseButton;
 
         this.telemetry = telemetry;
     }
 
     public void update() {
-        if(forwardButton.getAsBoolean()) accelMotor.setPower(ACCEL_MAX_POWER*0.7);
-        else accelMotor.setPower(0);
-        if(reverseButton.getAsBoolean()) accelMotor.setPower(-ACCEL_MAX_POWER*0.7);
-        else accelMotor.setPower(0);
+        if(activationButton.getAsBoolean() && !prev_btn_state) {
+            state = (state == State.STOPPED) ? State.RUNNING : State.STOPPED;
+        }
 
-//        if(activationButton.getAsBoolean() && !prev_btn_state) {
-//            state = accelEnabled ? State.RUNNING : State.STOPPED;
-//        }
-//
-//        accelMotor.setPower(state == State.RUNNING ? ACCEL_MAX_POWER : 0);
-//
-//        prev_btn_state = activationButton.getAsBoolean();
+        accelMotor.setPower(state == State.RUNNING ? ACCEL_MAX_POWER : 0);
 
-        telemetry.addData("Accelerator State: ", getState());
+        prev_btn_state = activationButton.getAsBoolean();
+
+        telemetry.addData("Accelerator State: ", state);
     }
 
     public State getState() {
