@@ -2,12 +2,17 @@ package org.firstinspires.ftc.teamcode.Tests;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
+// This TEST FILE: tunes the feedforward values for the drivebase motors
+// (++ FTCDashboard Config Variables)
+
+@Disabled // TEST FILE: It is Disabled the OpMode so it doesnt show up in the driver station
 @Config
 @TeleOp(name="FeedForwardTuner", group="Tests")
 public class FeedForwardTuner extends LinearOpMode {
@@ -27,7 +32,6 @@ public class FeedForwardTuner extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-//            power = gamepad1.left_stick_y;
             leftMotor.setPower(KSL * Math.signum(power) + KVL * power);
             rightMotor.setPower(KSR * Math.signum(power) + KVR * power);
 

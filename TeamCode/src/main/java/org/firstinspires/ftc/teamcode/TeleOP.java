@@ -5,12 +5,14 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Subsystems.Accelerator;
 import org.firstinspires.ftc.teamcode.Subsystems.Ascent;
-import org.firstinspires.ftc.teamcode.Subsystems.Barrier;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.Subsystems.Intake;
+import org.firstinspires.ftc.teamcode.utils.GamepadEx;
 
 @TeleOp(name="TeleOP", group="")
 public class TeleOP extends LinearOpMode {
+    // --------------------------------------- Subsystems --------------------------------------- //
+    private GamepadEx controller;
     private Drivetrain drivetrain;
     private Intake intake;
     private Accelerator accelerator;
@@ -19,49 +21,64 @@ public class TeleOP extends LinearOpMode {
 
     private boolean robotHasInit;
 
+    // ------------------------------------------------------------------------------------------ //
+
     @Override
     public void runOpMode() {
+        // ------------------------------ Subsystem Initialization ------------------------------ //
+        controller = new GamepadEx(gamepad1);
+
         drivetrain = new Drivetrain(
                 hardwareMap,
                 telemetry,
-                () -> -gamepad1.left_stick_y,
-                () -> gamepad1.right_stick_x,
-                () -> gamepad1.right_trigger,
+                () -> controller.getLeftStickY(),
+                () -> controller.getRightStickX(),
+                () -> controller.getRightTrigger(),
 //                () -> barrier.getState() != Barrier.State.HIDE // TODO: Implement mode switch
                 () -> false
         );
         intake = new Intake(
                 hardwareMap,
                 telemetry,
-                () -> gamepad1.dpad_up,
-                () -> gamepad1.dpad_down
+                () -> controller.justPressed(GamepadEx.Button.DPAD_UP),
+                () -> controller.justPressed(GamepadEx.Button.DPAD_DOWN)
         );
         accelerator = new Accelerator(
                 hardwareMap,
                 telemetry,
-                () -> gamepad1.a
+                () -> controller.justPressed(GamepadEx.Button.A)
         );
-        ascent = new Ascent(hardwareMap, () -> gamepad1.right_bumper, () -> gamepad1.left_bumper);
+        ascent = new Ascent(
+                hardwareMap,
+                () -> controller.justPressed(GamepadEx.Button.RIGHT_BUMPER),
+                () -> controller.justPressed(GamepadEx.Button.LEFT_BUMPER)
+        );
 
 //        barrier = new Barrier(
 //                hardwareMap,
 //                telemetry,
-//                ()->gamepad1.y,
-//                ()->gamepad1.x,
+//                () -> controller.justPressed(GamepadEx.Button.Y),
+//                () -> controller.justPressed(GamepadEx.Button.X),
 //                () -> robotHasInit,
 //                () -> accelerator.getState() == Accelerator.State.RUNNING
 //        );
 
         waitForStart();
 
-        while (opModeIsActive()) {
+        while (opModeIsActive() && !isStopRequested()) {
+            controller.update(gamepad1);
+            // Wait for the robot to Move a little to init the subsystems -> avoid penalties b4
+            // match timer starts
+
             if (!robotHasInit) {
-                if(Math.abs(gamepad1.right_stick_x) > 0.1 || Math.abs(gamepad1.left_stick_y) > 0.1) {
+                if(Math.abs(controller.getRightStickX()) > 0.1
+                        || Math.abs(controller.getLeftStickY()) > 0.1) {
                     robotHasInit = true;
                 }
                 continue;
             }
 
+            // ------------------------------- Subsystem Updates -------------------------------- //
             drivetrain.update();
             intake.update();
             accelerator.update();

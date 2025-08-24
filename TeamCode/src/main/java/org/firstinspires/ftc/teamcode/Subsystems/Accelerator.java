@@ -10,10 +10,12 @@ import java.util.function.BooleanSupplier;
 
 @Config
 public class Accelerator {
+    // ---------------------------------------- Hardware ---------------------------------------- //
     private DcMotorEx accelMotor;
     public static double ACCEL_MAX_POWER = 1.0;
     private BooleanSupplier activationButton;
-    private boolean prev_btn_state;
+
+    // ------------------------------------ State Management ------------------------------------ //
 
     public enum State {
         STOPPED,
@@ -23,6 +25,8 @@ public class Accelerator {
     private State state = State.STOPPED;
 
     private Telemetry telemetry;
+
+    // ------------------------------------------------------------------------------------------ //
 
     public Accelerator(HardwareMap hm,
                        Telemetry telemetry,
@@ -36,14 +40,14 @@ public class Accelerator {
     }
 
     public void update() {
-        if(activationButton.getAsBoolean() && !prev_btn_state) {
+        if(activationButton.getAsBoolean()) { // Toggle state on button press
             state = (state == State.STOPPED) ? State.RUNNING : State.STOPPED;
         }
 
+        // Set motor power based on state
         accelMotor.setPower(state == State.RUNNING ? ACCEL_MAX_POWER : 0);
 
-        prev_btn_state = activationButton.getAsBoolean();
-
+        // -------------------------------------- Telemetry ------------------------------------- //
         telemetry.addData("Accelerator State: ", state);
     }
 

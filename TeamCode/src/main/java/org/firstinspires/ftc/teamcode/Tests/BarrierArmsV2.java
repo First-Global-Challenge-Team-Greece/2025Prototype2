@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Tests;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -13,8 +14,12 @@ import org.firstinspires.ftc.teamcode.Subsystems.Barrier;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.Subsystems.Intake;
 
+// This TEST FILE: tests the Barrier Arms along with a feedforward controller
+// (++ FTCDashboard Config Variables)
+
+@Disabled // TEST FILE: It is Disabled the OpMode so it doesnt show up in the driver station
 @Config
-@TeleOp(name="BarrierArmsV2", group="")
+@TeleOp(name="BarrierArmsV2", group="Tests")
 public class BarrierArmsV2 extends LinearOpMode {
     private DcMotorEx leftMotor, rightMotor;
     private ServoImplEx leftArm, rightArm;

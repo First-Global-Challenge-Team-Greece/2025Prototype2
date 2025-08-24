@@ -12,9 +12,11 @@ import java.util.function.BooleanSupplier;
 
 @Config
 public class Intake {
+    // ---------------------------------------- Hardware ---------------------------------------- //
     private DcMotorEx intakeMotor;
     private BooleanSupplier forwardButton, reverseButton;
-    private boolean prev_fwdBtn_state = false, prev_revbtn_state = false;
+
+    // ------------------------------------ State Management ------------------------------------ //
 
     public enum State {
         STOPPED,
@@ -32,6 +34,8 @@ public class Intake {
 
     private Telemetry telemetry;
 
+    // ------------------------------------------------------------------------------------------ //
+
     public Intake(HardwareMap hm,
                   Telemetry telemetry,
                   BooleanSupplier forwardButton,
@@ -47,24 +51,24 @@ public class Intake {
     }
 
     public void update() {
-        if(forwardButton.getAsBoolean() && !prev_fwdBtn_state) {
+        // Move Intake according to button presses
+        if(forwardButton.getAsBoolean()) {
             state = state != State.FORWARD ? State.FORWARD : State.STOPPED;
         }
 
-        if(reverseButton.getAsBoolean() && !prev_revbtn_state) {
+        if(reverseButton.getAsBoolean()) {
             state = state != State.REVERSE ? State.REVERSE : State.STOPPED;
         }
 
+        // Set motor power based on state
         intakeMotor.setPower(velocities.get(state));
 
+        // -------------------------------------- Telemetry ------------------------------------- //
         telemetry.addData("Intake State: ", getState());
-
-        prev_fwdBtn_state = forwardButton.getAsBoolean();
-        prev_revbtn_state = reverseButton.getAsBoolean();
     }
 
     public void setState(State state) {
-        if(this.state == state) return;
+        if(this.state == state) return; // No Change, (Less Variable Writing Optimization)
         this.state = state;
 //        intakeMotor.setPower(velocities.get(state));
     }
