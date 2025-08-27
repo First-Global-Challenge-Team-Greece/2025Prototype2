@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.function.BooleanSupplier;
 
 @Config
-public class Barrier {
+public class Barrier2ArmFork {
     // ----------------------------------------- Hardware --------------------------------------- //
     private ServoImplEx leftArm, rightArm;
     private BooleanSupplier toggleButton, hideButton, robotMoved, accelRunning;
@@ -46,12 +46,12 @@ public class Barrier {
 
     private Telemetry telemetry;
 
-    public Barrier(HardwareMap hm,
-                   Telemetry telemetry,
-                   BooleanSupplier toggleButton,
-                   BooleanSupplier hideButton,
-                   BooleanSupplier robotMoved,
-                   BooleanSupplier accelRunning) {
+    public Barrier2ArmFork(HardwareMap hm,
+                           Telemetry telemetry,
+                           BooleanSupplier toggleButton,
+                           BooleanSupplier hideButton,
+                           BooleanSupplier robotMoved,
+                           BooleanSupplier accelRunning) {
         leftArm = hm.get(ServoImplEx.class, "left_arm");
         rightArm = hm.get(ServoImplEx.class, "right_arm");
         leftArm.setPosition(leftArmPos.get(State.HIDE));

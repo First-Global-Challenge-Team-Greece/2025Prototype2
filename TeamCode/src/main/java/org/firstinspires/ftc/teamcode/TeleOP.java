@@ -5,21 +5,29 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Subsystems.Accelerator;
 import org.firstinspires.ftc.teamcode.Subsystems.Ascent;
+import org.firstinspires.ftc.teamcode.Subsystems.BarrierV3;
+import org.firstinspires.ftc.teamcode.Subsystems.Compartment;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain;
+import org.firstinspires.ftc.teamcode.Subsystems.Fingers;
 import org.firstinspires.ftc.teamcode.Subsystems.Intake;
 import org.firstinspires.ftc.teamcode.utils.GamepadEx;
+
+import java.util.function.BooleanSupplier;
 
 @TeleOp(name="TeleOP", group="")
 public class TeleOP extends LinearOpMode {
     // --------------------------------------- Subsystems --------------------------------------- //
-    private GamepadEx controller;
+    private GamepadEx controller, controller2;
     private Drivetrain drivetrain;
     private Intake intake;
     private Accelerator accelerator;
     private Ascent ascent;
-//    private Barrier barrier;
+    private BarrierV3 barrier;
+    private Compartment compartment;
+    private Fingers fingers;
 
     private boolean robotHasInit;
+    private BooleanSupplier hanging = () -> false;
 
     // ------------------------------------------------------------------------------------------ //
 
@@ -27,47 +35,62 @@ public class TeleOP extends LinearOpMode {
     public void runOpMode() {
         // ------------------------------ Subsystem Initialization ------------------------------ //
         controller = new GamepadEx(gamepad1);
+        controller2 = new GamepadEx(gamepad2);
 
         drivetrain = new Drivetrain(
                 hardwareMap,
                 telemetry,
-                () -> controller.getLeftStickY(),
-                () -> controller.getRightStickX(),
-                () -> controller.getRightTrigger(),
-//                () -> barrier.getState() != Barrier.State.HIDE // TODO: Implement mode switch
-                () -> false
+                controller::getLeftStickY,
+                controller::getRightStickX,
+                controller::getRightTrigger,
+                () -> false,
+                hanging
         );
+
         intake = new Intake(
                 hardwareMap,
                 telemetry,
-                () -> controller.justPressed(GamepadEx.Button.DPAD_UP),
-                () -> controller.justPressed(GamepadEx.Button.DPAD_DOWN)
+                () -> controller2.justPressed(GamepadEx.Button.DPAD_UP),
+                () -> controller2.justPressed(GamepadEx.Button.DPAD_LEFT),
+                () -> controller2.justPressed(GamepadEx.Button.DPAD_DOWN),
+                hanging
         );
+
         accelerator = new Accelerator(
                 hardwareMap,
                 telemetry,
-                () -> controller.justPressed(GamepadEx.Button.A)
+                () -> controller2.justPressed(GamepadEx.Button.A),
+                hanging
         );
+
         ascent = new Ascent(
                 hardwareMap,
                 telemetry,
-                () -> controller.justPressed(GamepadEx.Button.RIGHT_BUMPER),
-                () -> controller.justPressed(GamepadEx.Button.LEFT_BUMPER)
+                () -> controller2.justPressed(GamepadEx.Button.RIGHT_BUMPER),
+                () -> controller2.justPressed(GamepadEx.Button.LEFT_BUMPER)
         );
 
-//        barrier = new Barrier(
-//                hardwareMap,
-//                telemetry,
-//                () -> controller.justPressed(GamepadEx.Button.Y),
-//                () -> controller.justPressed(GamepadEx.Button.X),
-//                () -> robotHasInit,
-//                () -> accelerator.getState() == Accelerator.State.RUNNING
-//        );
+        hanging = ascent::justStartedAscending;
+
+        barrier = new BarrierV3(
+                hardwareMap,
+                telemetry,
+                () -> controller2.justPressed(GamepadEx.Button.X)
+        );
+
+//        compartment = new Compartment(hardwareMap);
+
+        fingers = new Fingers(
+                hardwareMap,
+                () -> intake.getState() != Constants.IntakeState.STOPPED,
+                () -> controller2.justPressed(GamepadEx.Button.B)
+        );
 
         waitForStart();
 
         while (opModeIsActive() && !isStopRequested()) {
             controller.update();
+            controller2.update();
 
             // Wait for the robot to Move a little to init the subsystems -> avoid penalties b4
             // match timer starts
@@ -84,7 +107,9 @@ public class TeleOP extends LinearOpMode {
             intake.update();
             accelerator.update();
             ascent.update();
-//            barrier.update();
+            barrier.update();
+//            compartment.update();
+            fingers.update();
 
             telemetry.update();
         }

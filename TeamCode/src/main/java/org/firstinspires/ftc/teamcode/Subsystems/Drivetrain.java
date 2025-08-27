@@ -17,13 +17,14 @@ public class Drivetrain {
     private DcMotorEx leftMotor, rightMotor;
     private DoubleSupplier forwardPower, turnPower, accelPower;
 
-    // Feedforward constants
-    // KS: is the static gain -> for Static Friction
-    // KV: is the velocity gain -> Fixes Motor Inaccuracies Linearly
-
-    private BooleanSupplier reversedHeading; // True Sets the heading to rear
+    private BooleanSupplier reversedHeading, hanging; // True Sets the heading to rear
+    private boolean disabled;
 
     private Telemetry telemetry;
+
+    // ------------------------------------------------------------------------------------------ //
+    private double fwd_factor, max_mapping_power, left_power, right_power, max_raw_power,
+            leftPower_map, rightPower_map;
 
     // ------------------------------------------------------------------------------------------ //
 
@@ -33,7 +34,8 @@ public class Drivetrain {
             DoubleSupplier forwardPower,
             DoubleSupplier turnPower,
             DoubleSupplier accelPower,
-            BooleanSupplier reversedHeading
+            BooleanSupplier reversedHeading,
+            BooleanSupplier hanging
     ) {
         leftMotor = hm.get(DcMotorEx.class, Constants.LEFT_MOTOR_NAME);
         rightMotor = hm.get(DcMotorEx.class, Constants.RIGHT_MOTOR_NAME);
@@ -46,6 +48,7 @@ public class Drivetrain {
         this.accelPower = accelPower;
 
         this.reversedHeading = reversedHeading;
+        this.hanging = hanging;
 
         this.telemetry = telemetry;
     }
@@ -56,8 +59,18 @@ public class Drivetrain {
     }
 
     public void update() {
-        double fwd_factor = !reversedHeading.getAsBoolean() ? 1 : -1; // Reversed Heading Handling
-        double max_mapping_power = Range.scale(
+        disabled = hanging.getAsBoolean() | disabled;
+
+        if(hanging.getAsBoolean()) {
+            leftMotor.setMotorDisable();
+            rightMotor.setMotorDisable();
+        }
+
+        if (disabled) return;
+
+        // ------------------------------------ Calculations ------------------------------------ //
+        fwd_factor = !reversedHeading.getAsBoolean() ? 1 : -1; // Reversed Heading Handling
+        max_mapping_power = Range.scale(
                 accelPower.getAsDouble(),
                 0,
                 1,
@@ -65,16 +78,20 @@ public class Drivetrain {
                 Constants.MAX_POWER
         ); // Map the Max Power Based on Trigger
 
+        left_power = forwardPower.getAsDouble() * fwd_factor + turnPower.getAsDouble();
+        right_power = forwardPower.getAsDouble() * fwd_factor - turnPower.getAsDouble();
+        max_raw_power = Math.max(Math.abs(left_power), Math.abs(right_power));
+
         // Per Side/Motor Power Calculation
-        double leftPower = Range.scale(
-                forwardPower.getAsDouble() * fwd_factor + turnPower.getAsDouble(),
+        leftPower_map = Range.scale(
+                left_power/max_raw_power,
                 0.0,
                 1.0,
                 0.0,
                 max_mapping_power
-        ) + Constants.KS_theta * Math.signum(turnPower.getAsDouble()); // KS_theta robot turn -> Smoothness // TODO Na to alla 0.1 kai 0.2
-        double rightPower = Range.scale(
-                forwardPower.getAsDouble() * fwd_factor - turnPower.getAsDouble(),
+        ) + Constants.KS_theta * Math.signum(turnPower.getAsDouble()); // KS_theta robot turn -> Smoothness
+        rightPower_map = Range.scale(
+                right_power/max_raw_power,
                 0.0,
                 1.0,
                 0.0,
@@ -82,8 +99,8 @@ public class Drivetrain {
         ) - Constants.KS_theta * Math.signum(turnPower.getAsDouble()); // KS_theta robot turn -> Smoothness
 
         // Set the Power to Motors (power calculated above -> Feedforward(L, R) -> Power Setting)
-        leftMotor.setPower(feedforward(leftPower, Constants.Motor.LEFT));
-        rightMotor.setPower(feedforward(rightPower, Constants.Motor.RIGHT));
+        leftMotor.setPower(feedforward(leftPower_map, Constants.Motor.LEFT));
+        rightMotor.setPower(feedforward(rightPower_map, Constants.Motor.RIGHT));
 
         // --------------------------------------- Telemetry -------------------------------------- //
         telemetry.addData("[Drivetrain] Forward Power: ", forwardPower.getAsDouble());

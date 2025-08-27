@@ -13,7 +13,8 @@ import java.util.function.BooleanSupplier;
 public class Accelerator {
     // ---------------------------------------- Hardware ---------------------------------------- //
     private DcMotorEx accelMotor;
-    private BooleanSupplier activationButton;
+    private BooleanSupplier activationButton, hanging;
+    private boolean disabled;
 
     // ------------------------------------ State Management ------------------------------------ //
 
@@ -25,18 +26,29 @@ public class Accelerator {
 
     public Accelerator(HardwareMap hm,
                        Telemetry telemetry,
-                       BooleanSupplier activationButton) {
+                       BooleanSupplier activationButton,
+                       BooleanSupplier  hanging) {
         accelMotor = hm.get(DcMotorEx.class, Constants.ACCELERATOR_MOTOR_NAME);
         accelMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
 
         this.activationButton = activationButton;
+        this.hanging = hanging;
 
         this.telemetry = telemetry;
     }
 
     public void update() {
+        disabled = hanging.getAsBoolean() | disabled;
+
+        if(hanging.getAsBoolean()) accelMotor.setMotorDisable();
+
+        if (disabled) return;
+
         if(activationButton.getAsBoolean()) { // Toggle state on button press
-            state = (state == Constants.AcceleratorState.STOPPED) ? Constants.AcceleratorState.RUNNING : Constants.AcceleratorState.STOPPED;
+            state = (state == Constants.AcceleratorState.STOPPED)
+                    ? Constants.AcceleratorState.RUNNING
+                    :
+                    Constants.AcceleratorState.STOPPED;
         }
 
         // Set motor power based on state

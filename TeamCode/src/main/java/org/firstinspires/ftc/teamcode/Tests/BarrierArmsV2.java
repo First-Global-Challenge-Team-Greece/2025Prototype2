@@ -8,12 +8,6 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.Subsystems.Accelerator;
-import org.firstinspires.ftc.teamcode.Subsystems.Ascent;
-import org.firstinspires.ftc.teamcode.Subsystems.Barrier;
-import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain;
-import org.firstinspires.ftc.teamcode.Subsystems.Intake;
-
 // This TEST FILE: tests the Barrier Arms along with a feedforward controller
 // (++ FTCDashboard Config Variables)
 

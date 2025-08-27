@@ -32,8 +32,8 @@ public class FeedForwardTuner extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-            leftMotor.setPower(KSL * Math.signum(power+0.000000001) + KVL * power);
-            rightMotor.setPower(KSR * Math.signum(power+0.000000001) + KVR * power);
+            leftMotor.setPower(KSL * Math.signum(power+0.00000000000000000000001) + KVL * power);
+            rightMotor.setPower(KSR * Math.signum(power+0.00000000000000000000001) + KVR * power);
 
             dash_tele.addData("Target Vel: ", power*(28*500));
             dash_tele.addData("Left Actual Vel: ", leftMotor.getVelocity());

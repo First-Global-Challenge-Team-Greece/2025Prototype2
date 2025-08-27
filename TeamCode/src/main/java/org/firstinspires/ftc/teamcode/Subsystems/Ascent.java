@@ -20,7 +20,8 @@ public class Ascent {
     private double start_time = 0.0; // seconds
     private boolean firct_update_cycle = false;
 
-    private Constants.AscentState state = Constants.AscentState.STOPPED;
+    private Constants.AscentState state = Constants.AscentState.STOPPED,
+            last_state = Constants.AscentState.STOPPED;
 
     private Telemetry telemetry;
 
@@ -46,18 +47,20 @@ public class Ascent {
             start_time = System.currentTimeMillis() / 1000.0;
         }
 
+        telemetry.addData(
+                "[Ascent] Time Elapsed: ",
+                System.currentTimeMillis() / 1000.0 - start_time
+        );
+
         // time < thresh: do not allow ascent SAFETY FEATURE
-//        if((System.currentTimeMillis() / 1000.0 - start_time) < Constants.ACCEL_ENABLE_TIMESTAMP) return;
+//        if((System.currentTimeMillis() / 1000.0 - start_time) < Constants.ACCEL_ENABLE_TIMESTAMP) return; // TODO: Warning(NEEDDDDED)
 
 //         If no button is pressed, do not set power (Less Variable Writing Optimization)
         if(!raiseBtn.getAsBoolean() && !lowerBtn.getAsBoolean()) return;
 
         if(raiseBtn.getAsBoolean()) {
-            if(state != Constants.AscentState.ASCENDING) {
-                setState(Constants.AscentState.ASCENDING);
-            } else {
-                setState(Constants.AscentState.STOPPED);
-            }
+            if(state != Constants.AscentState.ASCENDING) setState(Constants.AscentState.ASCENDING);
+            else setState(Constants.AscentState.STOPPED);
         }
 
         // ------------------------------------- Telemetry -------------------------------------- //
@@ -66,11 +69,18 @@ public class Ascent {
 
     public void setState(Constants.AscentState state) {
         if(this.state == state) return; // No Change, (Less Variable Writing Optimization)
+
+        this.last_state = this.state;
         this.state = state;
         ascentMotor.setPower(state.getVelocity());
     }
 
     public Constants.AscentState getState() {
         return state;
+    }
+
+    public boolean justStartedAscending() {
+        return state == Constants.AscentState.ASCENDING &&
+                last_state != Constants.AscentState.ASCENDING;
     }
 }
